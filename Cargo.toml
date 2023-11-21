@@ -10,12 +10,17 @@ clap = {version = "4.4.7", features = ["derive"]}
 regex = "1.10.2"
 tokio = {version = "1.33.0", features = ["full"]}
 async-recursion = "1.0.5"
+bytes = "1.5.0"
+prost = "0.12.2"
 
 [profile.dev]
 opt-level = 0
 debug = true
 
+
 [profile.release]
 opt-level = 3
 debug = false
 
+[workspace]
+members = ["rust_protobuf_builder"]

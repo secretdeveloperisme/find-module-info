@@ -1,0 +1,12 @@
+syntax = "proto2";
+package model;
+
+message MakeFile{
+  required string path = 1;
+  required string output_binary = 2;
+  repeated string dependencies = 3;
+};
+
+message Makefiles{
+  repeated Makefiles makefiles = 1;
+}

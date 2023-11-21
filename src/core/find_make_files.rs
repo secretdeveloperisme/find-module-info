@@ -32,14 +32,14 @@ async fn handle_file_recursive(path: &Path, args: &Args, makefile_folder_path: &
        
       }
     }
-  }else{
-    if let Ok(mut dir_entry) = fs::read_dir(path).await{
-      while let Ok(Some(dir)) = dir_entry.next_entry().await{
-        let dir_path = Path::join(&path, dir.path());
-        handle_file_recursive(&dir_path, args, makefile_folder_path).await;
-      }
+  }else
+  if let Ok(mut dir_entry) = fs::read_dir(path).await{
+    while let Ok(Some(dir)) = dir_entry.next_entry().await{
+      let dir_path = Path::join(&path, dir.path());
+      handle_file_recursive(&dir_path, args, makefile_folder_path).await;
     }
   }
+  
 }
 
 async fn process_makefile(source_file: &mut File, path: &Path, makefile_folder_path: &Path)-> Result<(), Box<dyn std::error::Error>>{

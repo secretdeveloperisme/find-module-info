@@ -3,12 +3,15 @@ use core::{find_make_files::find_makefiles, find_output_binary::find_output_bina
 
 use clap::Parser;
 use command_paraser::Args;
-use find_module_info::utils::{ProgramResult, Error as ProgramErr};
+use utils::result::{ProgramResult, Error as ProgramErr};
+use proto::make_files::Makefiles;
 
 mod command_paraser;
 mod core;
 mod utils;
 mod constants;
+mod proto;
+
 #[tokio::main]
 async fn main() {
   let args = Args::parse();
@@ -23,6 +26,18 @@ async fn main() {
       "binary" =>{
         if let Err(e) = find_output_binary().await{
           result = ProgramResult::Err(ProgramErr::new(e.as_str()));
+        }
+      }
+      "read" => {
+        println!("Print Makefiles: ");
+        let mut makefiles = Makefiles::new();
+        
+        if let Ok(_) = makefiles.read_from_db_file().await{
+          for makefile in makefiles.get_makefiles(){
+            println!("{}", makefile);
+          }
+        }else{
+          result = ProgramResult::Err(ProgramErr::new("Cannot read makefiles"));
         }
       }
       _ => {
