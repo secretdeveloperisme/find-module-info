@@ -5,6 +5,7 @@ message MakeFile{
   required string path = 1;
   required string output_binary = 2;
   repeated string dependencies = 3;
+  repeated string dependants = 4;
 };
 
 message Makefiles{

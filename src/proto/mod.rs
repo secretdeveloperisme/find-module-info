@@ -12,10 +12,12 @@ pub mod make_files;
 impl Display for MakeFile{
   fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
     let mut result_str = String::new();
+    
     result_str.push_str(format!("PATH: {}\n", self.path).as_str());
     result_str.push_str(format!("OUTPUT_BINARY: {}\n", self.output_binary).as_str());
-    result_str.push_str(format!("DEPENDENCIES: {}", self.dependencies.join(", ")).as_str());
-  
+    result_str.push_str(format!("DEPENDENCIES:\n\t{}\n", self.dependencies.join("\n\t")).as_str());
+    result_str.push_str(format!("DEPENDANTS:\n\t{}", self.dependants.join("\n\t")).as_str());
+
     write!(f,"{}", result_str)
   }
 }

@@ -43,7 +43,6 @@ async fn handle_file_recursive(path: &Path, args: &Args, makefile_folder_path: &
 }
 
 async fn process_makefile(source_file: &mut File, path: &Path, makefile_folder_path: &Path)-> Result<(), Box<dyn std::error::Error>>{
-  println!("process file: {}", path.to_str().unwrap());
   let _ = source_file.metadata().await?;
   let file_name = path_to_name(&path);
   let mut dest_file: File =  File::create(Path::join(makefile_folder_path, &file_name)).await?;

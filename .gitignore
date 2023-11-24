@@ -3,3 +3,4 @@
 Cargo.lock
 make_temp
 .*
+makefiles.db

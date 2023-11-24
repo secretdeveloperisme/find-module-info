@@ -32,22 +32,25 @@ pub fn caputre_dependencies(content: &String) -> Option<Vec<String>>{
   let mut line_iter = content.lines().into_iter();
   let file_in_path_regex = Regex::new(MATCH_FILE_IN_PATH_REGEX).unwrap();
   let mut dependecies = Vec::new();
-  while let Some(line) = line_iter.next(){
+  while let Some(mut line) = line_iter.next(){
     if line.contains("SHARED_LIBS") || line.contains("STATIC_LIBS"){
-      while let Some(line) = line_iter.next(){
+      loop {
         let mut captures = file_in_path_regex.captures_iter(&line);
         if let Some(capture) = captures.next(){
           let file_name = capture.name("file_name").unwrap();
           dependecies.push(file_name.as_str().to_string());
         }
-        else {
+        let line_opt  = line_iter.next();
+        if line_opt.is_none() {
           break;
+        }
+        else{
+          line = line_opt.unwrap();
         }
       }
     }
   }  
   if dependecies.is_empty() { None } else{ Some(dependecies) }
-
 }
 
 pub async fn find_output_binary()-> Result<(), String>{

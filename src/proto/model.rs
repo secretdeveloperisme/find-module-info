@@ -7,6 +7,8 @@ pub struct MakeFile {
     pub output_binary: ::prost::alloc::string::String,
     #[prost(string, repeated, tag = "3")]
     pub dependencies: ::prost::alloc::vec::Vec<::prost::alloc::string::String>,
+    #[prost(string, repeated, tag = "4")]
+    pub dependants: ::prost::alloc::vec::Vec<::prost::alloc::string::String>,
 }
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]

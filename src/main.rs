@@ -28,14 +28,11 @@ async fn main() {
           result = ProgramResult::Err(ProgramErr::new(e.as_str()));
         }
       }
-      "read" => {
-        println!("Print Makefiles: ");
+      "depend" => {
         let mut makefiles = Makefiles::new();
         
         if let Ok(_) = makefiles.read_from_db_file().await{
-          for makefile in makefiles.get_makefiles(){
-            println!("{}", makefile);
-          }
+          makefiles.process_dependants();
         }else{
           result = ProgramResult::Err(ProgramErr::new("Cannot read makefiles"));
         }
