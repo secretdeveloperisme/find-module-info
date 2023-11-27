@@ -15,7 +15,11 @@ impl Makefiles{
   pub fn new()->Makefiles{
     Makefiles { items: Vec::new()}
   }
-  pub async fn read_from_db_file(&mut self)->Result<(), Error>{
+  pub fn get_items(&mut self) -> &mut Vec<MakeFile>{
+    &mut self.items
+  }
+  pub async fn read_from_db_file()->Result<Makefiles, Error>{
+    let mut makefiles = Makefiles::new();
     let mut makefile_db_file = File::open(MAKEFILES_DB_FILE_NAME).await?;
     while let Ok(message_size) = makefile_db_file.read_u64().await{
       let mut buffer = [0u8;2048];
@@ -23,12 +27,12 @@ impl Makefiles{
         if n > 0{
           let bytes_buffer = BytesMut::from(&buffer[0..message_size as usize]);
           if let Ok(makefile) = MakeFile::decode(bytes_buffer){
-            self.items.push(makefile);
+            makefiles.get_items().push(makefile);
           }
         }
       }
     }
-    Ok(())
+    Ok(makefiles)
   }
   pub fn get_makefiles(&self)->&Vec<MakeFile>{
     &self.items
@@ -42,9 +46,7 @@ impl Makefiles{
     None
   }
 
-  pub fn process_dependants(&mut self){
-    println!("===============================find dependencies=============================");
-    
+  pub fn process_dependants(&mut self){    
     let mut dependencies_map = HashMap::new();
     for makefile in &self.items{
       let current_binary = &makefile.output_binary; 

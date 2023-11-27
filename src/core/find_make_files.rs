@@ -1,12 +1,15 @@
 
-use std::{path::Path, io::Error};
+use std::{path::Path, io::{Error, self}};
 use async_recursion::async_recursion;
+use bytes::BytesMut;
+use prost::Message;
 use tokio::{fs::{File, self, create_dir}, io::{AsyncWriteExt, AsyncReadExt}};
-use crate::{command_paraser::Args, constants::{MAKEFILE_TEMPORARY_FOLDER_NAME, MAKEFILE_NAME_LOWER_CASE}, utils::common_functions::path_to_name};
+use crate::{command_paraser::Args, constants::{MAKEFILE_TEMPORARY_FOLDER_NAME, MAKEFILE_NAME_LOWER_CASE, MAKEFILES_DB_FILE_NAME}};
+use crate::{utils::common_functions::path_to_name, proto::model::MakeFile};
 
 
 
-pub async fn find_makefiles(args: Args)->Result<(), Box<dyn std::error::Error>>{
+pub async fn collect_makefiles(args: Args)->Result<(), Box<dyn std::error::Error>>{
   if !(args.get_source_path().is_dir()) {
     return Err(Error::new(std::io::ErrorKind::NotFound, "source path is not valid").into());
   }
@@ -61,4 +64,24 @@ async fn process_makefile(source_file: &mut File, path: &Path, makefile_folder_p
   }
   println!("After process file");
   Ok(())
+}
+
+
+pub async fn find_make_file_iter(output : &str)->Result<Vec<MakeFile>, io::Error>{
+  let mut makefiles =  Vec::new();
+  let mut makefile_db_file = File::open(MAKEFILES_DB_FILE_NAME).await?;
+  while let Ok(message_size) = makefile_db_file.read_u64().await{
+    let mut buffer = [0u8;2048];
+    if let Ok (n) = makefile_db_file.read(&mut buffer[0..message_size as usize]).await{
+      if n > 0{
+        let bytes_buffer = BytesMut::from(&buffer[0..message_size as usize]);
+        if let Ok(makefile) = MakeFile::decode(bytes_buffer){
+          if makefile.output_binary.contains(output){
+            makefiles.push(makefile);
+          }
+        }
+      }
+    }
+  }
+  Ok(makefiles)
 }
