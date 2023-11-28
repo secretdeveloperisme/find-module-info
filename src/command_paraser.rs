@@ -1,4 +1,4 @@
-use std::{path::PathBuf, fs};
+use std::{path::PathBuf, fs, vec};
 use clap::{Parser, Args};
 
 
@@ -72,8 +72,11 @@ impl Arguments{
 }
 
 impl FindOptions {
-  // get methods
 
+  pub fn new () -> Self{
+    FindOptions { source_path: "".into(), is_hidden: false, exclude_folder: Vec::new() }
+  }
+  // get methods
   pub fn get_source_path(&self) -> &PathBuf {
     &self.source_path
   }
