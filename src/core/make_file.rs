@@ -1,4 +1,4 @@
-use std::{path::PathBuf, io::Error, str::from_utf8};
+use std::{path::PathBuf, io::Error};
 
 use tokio::{fs::File, io::{BufReader, AsyncReadExt}};
 
@@ -19,21 +19,23 @@ impl MakeFile{
   pub async fn deserialize(file: File) -> Result<MakeFile, Error>{
     let mut file_buf_reader = BufReader::new (file);
     let path_size = file_buf_reader.read_u32().await?;
-    let mut buffer = [0u8; 1024];
-    file_buf_reader.read_exact(&mut buffer[0..path_size as usize]).await?;
-    let path: String = String::from_utf8(buffer[0..path_size as usize].to_vec()).unwrap();
+    let mut path_buffer = [0u8; 255];
+    file_buf_reader.read_exact(&mut path_buffer[0..path_size as usize]).await?;
+    let path  = String::from_utf8_lossy(&path_buffer[0..path_size as usize]);
     let mut content = String::new();
 
-    buffer.fill(0);
+    let mut content_buffer = [0u8;2048];
+    content_buffer.fill(0);
 
-    while let Ok(n) = file_buf_reader.read(&mut buffer).await {
+    while let Ok(n) = file_buf_reader.read(&mut content_buffer).await {
       if n == 0{
         break;
       }
-      let content_chunk = from_utf8(&buffer[0..n]).unwrap();
-      content.push_str(content_chunk);
+      let content_chunk = String::from_utf8_lossy(&content_buffer[0..n]);
+      content.push_str(content_chunk.to_string().as_str());
+      content_buffer.fill(0);
     }
-    Ok(MakeFile::new(path.into(), content))
+    Ok(MakeFile::new(path.to_string().into(), content))
     
   }
   pub fn get_content(&self)->&String{

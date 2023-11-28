@@ -3,7 +3,7 @@ use core::{find_make_files::{collect_makefiles, find_make_file_iter}, find_outpu
 use std::{env, path::Path};
 
 use clap::Parser;
-use command_paraser::Args;
+use command_paraser::{Arguments, FindOptions};
 use constants::OUTPUT_DIR_NAME;
 use tokio::fs::create_dir;
 use utils::result::{ProgramResult, Error as ProgramErr};
@@ -17,12 +17,12 @@ mod proto;
 
 #[tokio::main]
 async fn main() {
-  let args = Args::parse();
+  let args = Arguments::parse();
   let mut result = ProgramResult::Ok(());
   setup_output().await;
   match args.get_action() {
       "collect" =>{
-        if let Err(e) = collect_makefiles(args).await{
+        if let Err(e) = collect_makefiles(args.get_find_options()).await{
           result = ProgramResult::Err(ProgramErr::new( e.to_string().as_str()));
         }
       },
@@ -65,6 +65,7 @@ async fn main() {
   else {
     println!("Runnning program successfully");
   }
+  
 }
 
 async fn setup_output(){

@@ -38,7 +38,7 @@ impl Serializable for MakeFile {
     let mut total_buffer = BytesMut::with_capacity(len_of_u64 + length);
     total_buffer.put_u64(length as u64);
     self.encode(&mut buffer_make_file)?;
-    total_buffer.put(buffer_make_file);
+    total_buffer.put(&buffer_make_file[0..length as usize]);
     Ok(total_buffer)
   }
 }
@@ -49,7 +49,7 @@ pub async fn store_makefiles(makefiles: &Makefiles){
   if !makefiles_db_path.exists(){
     makefiles_db_file = File::create(makefiles_db_path).await.unwrap();
   }else{
-    makefiles_db_file = File::options().write(true).truncate(true).open(makefiles_db_path).await.unwrap();
+    makefiles_db_file = File::options().write(true).truncate(true).open(MAKEFILES_DB_FILE_NAME).await.unwrap();
   }
   for makefile in makefiles.get_makefiles(){
     let bytes_buf = makefile.serialize();
