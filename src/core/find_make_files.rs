@@ -26,7 +26,6 @@ async fn handle_file_recursive(path: &Path, find_option: &FindOptions, makefile_
   let target_name = path.file_name().unwrap().to_str().unwrap();
   if !find_option.is_hidden(){
     if target_name.starts_with("."){
-      println!("Ignore: {}", path.to_str().unwrap());
       return;
     }
   }
@@ -35,7 +34,6 @@ async fn handle_file_recursive(path: &Path, find_option: &FindOptions, makefile_
     if let Some(os_str) = path.file_name() {
       if os_str.eq_ignore_ascii_case(MAKEFILE_NAME_LOWER_CASE){
         if let Ok(mut file) = File::open(&path).await{
-          println!("Match file: {}", path.to_str().unwrap());
           let _ = process_makefile(&mut file, path, makefile_folder_path).await;
         }
       }
@@ -43,9 +41,11 @@ async fn handle_file_recursive(path: &Path, find_option: &FindOptions, makefile_
   }else
   {
     let folder_name = path.file_name().unwrap().to_str().unwrap();
+    // println!("folder_name: {}", folder_name);
+    // println!("exclude_folder: {}", find_option.get_exclude_folder().join(";"));
     if !find_option.get_exclude_folder().is_empty(){
       for exclude_folder_name in find_option.get_exclude_folder().iter(){
-        if exclude_folder_name.eq_ignore_ascii_case(folder_name){
+        if exclude_folder_name == folder_name{
           return;
         }
       }

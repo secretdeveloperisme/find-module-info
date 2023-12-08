@@ -27,7 +27,6 @@ L: Clone
         let dir_path = dir_entry.path();
         if dir_path.is_file(){
           if let Ok(file) = File::open(&dir_path).await{
-            println!("process file: {}", dir_path.to_string_lossy());
             f(file, var.clone()).await;
           }
         }
