@@ -1,4 +1,4 @@
-use std::{path::Path, sync::Arc};
+use std::{path::Path, sync::Arc, collections::HashSet};
 
 
 use prost::{Message, bytes::BytesMut};
@@ -9,24 +9,25 @@ use crate::{constants::{MAKEFILE_TEMPORARY_FOLDER_NAME, MAKEFILES_DB_FILE_NAME},
 use super::make_file::MakeFile;
 
 
-const OUTPUT_BINARY_VAR_REGEX: &str = r"(?m)\$\(OBJDIR\)\/\$\((?<var>\w+)\)";
+const OUTPUT_BINARY_VAR_REGEX: &str = r"(?m)\$\(OBJDIR\d{0,2}\)\/\$\((?<var>\w+)\)";
 const MATCH_FILE_IN_PATH_REGEX: &str = r"(?mi)\/(?<file_name>[\w\.]+)\s{0,3}[\\\n]?$";
 
 
-pub fn capure_output_binary(content: &String)->Option<String>{
+pub fn capure_output_binary(content: &String)->Option<HashSet<String>>{
+  let mut output_binaries = HashSet::new();
   let output_regex = Regex::new(OUTPUT_BINARY_VAR_REGEX).unwrap();
   let mut captures = output_regex.captures_iter(content);
-  if let Some(matcher) = captures.next(){
+  while let Some(matcher) = captures.next(){
     if let Some(variable) = matcher.name("var") {
-      let value_var_regex = Regex::new(format!(r"(?mi){}=(?<binary>[\w\.\-]+)", variable.as_str()).as_str()).unwrap();
+      let value_var_regex = Regex::new(format!(r"{}=(?<binary>[\w\.\-]+)", variable.as_str()).as_str()).unwrap();
       let mut captures = value_var_regex.captures_iter(content);
       if let Some(matcher) = captures.next(){
         let output_binary = matcher.name("binary").unwrap().as_str();
-        return Some(output_binary.to_string());
+        output_binaries.insert(output_binary.to_string());
       }
     }
   }
-  None
+  if !output_binaries.is_empty() {Some(output_binaries)} else{None}
 }
 pub fn caputre_dependencies(content: &String) -> Option<Vec<String>>{
   let mut line_iter = content.lines().into_iter();
@@ -39,13 +40,16 @@ pub fn caputre_dependencies(content: &String) -> Option<Vec<String>>{
         if let Some(capture) = captures.next(){
           let file_name = capture.name("file_name").unwrap();
           dependecies.push(file_name.as_str().to_string());
-        }
+        } 
         let line_opt  = line_iter.next();
         if line_opt.is_none() {
           break;
         }
         else{
           line = line_opt.unwrap();
+          if line.is_empty(){
+            break;
+          }
         }
       }
     }
@@ -68,22 +72,25 @@ pub async fn find_output_binary()-> Result<(), String>{
   
   let db_file_arc = Arc::new(Mutex::new(makefiles_db_file));
   traversal_folder(temp_make_folder, |file, db_file_arc: Arc<Mutex<File>> | async move{
-    if let Ok(mut make_file) =  MakeFile::deserialize(file).await{
-      if let Some(output_binary) = capure_output_binary(make_file.get_content()){
-        println!("output binary = {}", &output_binary);
-        make_file.set_output_binary(output_binary);
-        let mut dependencies = caputre_dependencies(make_file.get_content()).unwrap_or(Vec::new());
-        make_file.set_dependencies(&mut dependencies);
-          let makefile_message: proto::model::MakeFile = MakeFile::into(make_file);
-          let length: usize = makefile_message.encoded_len();  
-          let mut buffer = BytesMut::with_capacity(length);
-          if let Ok(_) = makefile_message.encode(&mut buffer){
-            let mut db_file  = db_file_arc.lock().await;
-            if let Ok(_) = db_file.write_u64(length as u64).await{
-              let _ = db_file.write_all(&buffer[0..length]).await;
-              println!("write the file to database: {}", makefile_message.path);
+    if let Ok(make_file) =  MakeFile::deserialize(file).await{
+      if let Some(output_binaries) = capure_output_binary(make_file.get_content()){
+        let path = make_file.get_path().clone();
+        let dependencies = caputre_dependencies(make_file.get_content()).unwrap_or(Vec::new());
+        for output_binary in output_binaries{
+          let mut new_make_file = MakeFile::new(path.clone(), "".into());
+          new_make_file.set_output_binary(output_binary);
+          new_make_file.set_dependencies(&dependencies);
+            let makefile_message: proto::model::MakeFile = MakeFile::into(new_make_file);
+            let length: usize = makefile_message.encoded_len();  
+            let mut buffer = BytesMut::with_capacity(length);
+            if let Ok(_) = makefile_message.encode(&mut buffer){
+              let mut db_file  = db_file_arc.lock().await;
+              if let Ok(_) = db_file.write_u64(length as u64).await{
+                let _ = db_file.write_all(&buffer[0..length]).await;
+              }
             }
-          }
+        }
+        
       }
     }
     // return Option::<model::MakeFile>::None;

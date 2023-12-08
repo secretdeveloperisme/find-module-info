@@ -23,7 +23,7 @@ fn test_capture_output_binary() {
     all: $(OBJDIR)/$(LIBSTATIC)
   ");
   let result = capure_output_binary(&content).unwrap();
-  assert_eq!(result, "libsysteminfo.a")
+  assert!(result.get("libsysteminfo.a").is_some());
 }
 
 #[test]

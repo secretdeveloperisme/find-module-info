@@ -46,7 +46,7 @@ impl Makefiles{
     None
   }
 
-  pub fn process_dependants(&mut self){    
+  pub fn process_dependants(&mut self){   
     let mut dependencies_map = HashMap::new();
     for makefile in &self.items{
       let current_binary = &makefile.output_binary; 

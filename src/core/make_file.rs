@@ -44,12 +44,16 @@ impl MakeFile{
   pub fn set_output_binary(&mut self, output_binary: String){
     self.output_binary = output_binary;
   }
-  pub fn set_dependencies(&mut self, dependencies: &mut Vec<String>){
-    self.dependencies.append(dependencies);
+  pub fn set_dependencies(&mut self, dependencies: &Vec<String>){
+    let mut new_dependencies = dependencies.clone();
+    self.dependencies.append(&mut new_dependencies);
   }
 
   pub fn get_dependencies(&self) -> &Vec<String>{
     &self.dependencies
+  }
+  pub fn get_path(&self) -> &PathBuf{
+    &self.path
   }
 
 }
