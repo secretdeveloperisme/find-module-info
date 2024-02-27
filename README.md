@@ -66,24 +66,15 @@ The arguments are:
 Here it's a result of module libvnmedif.so
 
 ```bash
-====================libmedif.so====================
-PATH: new_main_dev\net\MedIf\Makefile
-OUTPUT_BINARY: libvnmedif.so
+====================libcollector.so====================
+PATH: project_dev\net\Make\Makefile
+OUTPUT_BINARY: libcollector.so
 DEPENDENCIES:
-        libntport.so
-        libvssrvrmanager.so
-        libdbdll.so
+        libporting.so
+        libdatabase.so
 DEPENDANTS:
-        voip
-        websql.exe
-        acollector
-        CCMCDR
-        OXE_VoIP
-        OXE_VoIPStream
-        SIPServer
-        vncdrfilter.cgi
-        vncodectype.cgi
-        vnmosconst.cgi
-        vnphonecalldesc.cgi
+        stopcollectors 
         startcollectors
+        disablecollectors
+        statuscollectors
 ```
