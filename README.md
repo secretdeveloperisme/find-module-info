@@ -14,6 +14,7 @@ Find module information tool facilitates finding dependencies and dependants eas
 ## 1. Collect makefiles
 
 Collect makefiles from source path to a single place with the many options: hidden, exclude folders.
+Collect makefiles from source path to a single place with the many options: hidden, exclude folders.
 
 ```bash
 find_module_info.exe --action collect --source_path path --is_hidden --exclude_folder folders
@@ -21,6 +22,7 @@ find_module_info.exe --action collect --source_path path --is_hidden --exclude_f
 
 The arguments are:
 
+- **--action** *collect*: This tells the tool to collect makefiles from the source path and copy them to a folder named **output/makefile_temp** in the current directory.
 - **--action** *collect*: This tells the tool to collect makefiles from the source path and copy them to a folder named **output/makefile_temp** in the current directory.
 - **--source_path** *path*: This specifies the source path where the tool will look for makefiles. You can use absolute or relative paths. For example, C:\Users\source_code.
 - **--is_hidden**: This is an optional argument that tells the tool to include hidden files and folders in the search. By default, the tool will ignore hidden items.
@@ -32,6 +34,7 @@ Find the binary output, dependencies and dependants of the modules, then store t
 
 ```bash
 find_module_info.exe --action binary # find output binary name
+find_module_info.exe --action depend # find dependencies and dependants
 find_module_info.exe --action depend # find dependencies and dependants
 ```
 
@@ -51,6 +54,7 @@ The arguments are:
 ## Find module
 
 Retrieve information from makefile database and show the output
+Retrieve information from makefile database and show the output
 
 ```bash
 find_module_info.exe --action find --module_name name
@@ -60,7 +64,9 @@ The arguments are:
 
 - **--action** *find*: This tells the tool to find the module information.
 - **--module_name** *name*: This specifies the module output name. You can input a part or fullname of the module. For example: libmedif.so.
+- **--module_name** *name*: This specifies the module output name. You can input a part or fullname of the module. For example: libmedif.so.
 
+### Output Example
 ### Output Example
 
 Here it's a result of module libvnmedif.so
